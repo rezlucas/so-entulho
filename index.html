@@ -473,6 +473,164 @@
       margin-bottom: 14px;
     }
 
+    /* ===== SEARCH BUTTON ===== */
+    #btn-buscar-rua {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 1000;
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    #btn-buscar-rua:active { background: var(--brand-dark); }
+
+    /* ===== SEARCH MODAL ===== */
+    #search-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 6000;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 60px 14px 14px;
+    }
+
+    #search-overlay.active { display: flex; }
+
+    #search-box {
+      background: var(--surface);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 480px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    #search-header {
+      background: var(--brand);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #search-header span {
+      font-size: 20px;
+    }
+
+    #search-header h2 {
+      font-size: 19px;
+      font-weight: 700;
+      color: #fff;
+      flex: 1;
+    }
+
+    #btn-fechar-search {
+      background: rgba(0,0,0,0.25);
+      border: none;
+      color: #fff;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    #search-body { padding: 18px; }
+
+    #search-input-wrap {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    #inp-rua {
+      flex: 1;
+      font-family: 'Roboto', sans-serif;
+      font-size: 18px;
+      padding: 13px 12px;
+      border-radius: 8px;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 52px;
+    }
+
+    #inp-rua:focus {
+      outline: none;
+      border-color: var(--brand);
+    }
+
+    #btn-executar-busca {
+      background: var(--brand);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      min-height: 52px;
+      min-width: 52px;
+      font-size: 22px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #btn-executar-busca:active { background: var(--brand-dark); }
+
+    #search-status {
+      font-size: 16px;
+      color: var(--text-muted);
+      min-height: 22px;
+      text-align: center;
+    }
+
+    #search-results { margin-top: 10px; }
+
+    .search-result-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 13px 14px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .search-result-item:active {
+      background: var(--surface-2);
+    }
+
+    .search-result-item .result-nome {
+      font-weight: 700;
+      font-size: 17px;
+      margin-bottom: 3px;
+    }
+
+    .search-result-item .result-detalhe {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
     /* ===== RESPONSIVE 320px ===== */
     @media (max-width: 360px) {
       body { font-size: 16px; }
@@ -489,7 +647,27 @@
 <div id="map-screen">
   <div id="map"></div>
   <div id="map-brand">SÓ ENTULHO</div>
+  <button id="btn-buscar-rua" title="Buscar rua">&#128269;</button>
   <button id="btn-ver-lista">&#9776; VER LISTA</button>
+</div>
+
+<!-- SEARCH MODAL -->
+<div id="search-overlay">
+  <div id="search-box">
+    <div id="search-header">
+      <span>&#128269;</span>
+      <h2>Buscar rua</h2>
+      <button id="btn-fechar-search">&#10005;</button>
+    </div>
+    <div id="search-body">
+      <div id="search-input-wrap">
+        <input type="text" id="inp-rua" placeholder="Ex: Rua das Flores" autocomplete="off">
+        <button id="btn-executar-busca">&#128269;</button>
+      </div>
+      <div id="search-status"></div>
+      <div id="search-results"></div>
+    </div>
+  </div>
 </div>
 
 <!-- LIST SCREEN -->
@@ -894,6 +1072,81 @@ function showAlert(msg) {
 document.getElementById('btn-fechar-alert').addEventListener('click', function() {
   hideOverlay('alert-overlay');
 });
+
+// ============================================================
+// SEARCH / GEOCODER
+// ============================================================
+document.getElementById('btn-buscar-rua').addEventListener('click', function() {
+  document.getElementById('search-results').innerHTML = '';
+  document.getElementById('search-status').textContent = '';
+  document.getElementById('inp-rua').value = '';
+  showOverlay('search-overlay');
+  setTimeout(() => document.getElementById('inp-rua').focus(), 100);
+});
+
+document.getElementById('btn-fechar-search').addEventListener('click', function() {
+  hideOverlay('search-overlay');
+});
+
+document.getElementById('inp-rua').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') executarBusca();
+});
+
+document.getElementById('btn-executar-busca').addEventListener('click', executarBusca);
+
+function executarBusca() {
+  const termo = document.getElementById('inp-rua').value.trim();
+  if (!termo) return;
+
+  const status  = document.getElementById('search-status');
+  const results = document.getElementById('search-results');
+  status.textContent  = 'Buscando...';
+  results.innerHTML   = '';
+
+  const query = encodeURIComponent(`${termo}, Goianésia, Goiás, Brasil`);
+  const url   = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=5&accept-language=pt-BR`;
+
+  fetch(url, { headers: { 'Accept-Language': 'pt-BR' } })
+    .then(r => r.json())
+    .then(data => {
+      status.textContent = '';
+
+      if (!data.length) {
+        status.textContent = 'Nenhum resultado encontrado.';
+        return;
+      }
+
+      results.innerHTML = data.map((item, i) => {
+        const partes    = item.display_name.split(',');
+        const nome      = partes[0].trim();
+        const detalhe   = partes.slice(1, 3).join(',').trim();
+        return `
+          <div class="search-result-item" onclick="irParaResultado(${item.lat}, ${item.lon})">
+            <div class="result-nome">${esc(nome)}</div>
+            <div class="result-detalhe">${esc(detalhe)}</div>
+          </div>`;
+      }).join('');
+    })
+    .catch(() => {
+      status.textContent = 'Erro na busca. Verifique sua internet.';
+    });
+}
+
+window.irParaResultado = function(lat, lon) {
+  hideOverlay('search-overlay');
+  map.setView([parseFloat(lat), parseFloat(lon)], 17);
+
+  // Marca temporária que some após 4 segundos
+  const pin = L.circleMarker([lat, lon], {
+    radius: 14,
+    color: '#E65100',
+    fillColor: '#E65100',
+    fillOpacity: 0.35,
+    weight: 3
+  }).addTo(map);
+
+  setTimeout(() => map.removeLayer(pin), 4000);
+};
 
 // ============================================================
 // INIT
