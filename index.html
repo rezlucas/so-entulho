@@ -1103,16 +1103,25 @@ function executarBusca() {
   status.textContent  = 'Buscando...';
   results.innerHTML   = '';
 
-  const query = encodeURIComponent(`${termo}, Goianésia, Goiás, Brasil`);
-  const url   = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=5&accept-language=pt-BR`;
+  // Bounding box de Goianésia-GO (left, bottom, right, top)
+  const BBOX = '-49.22,-15.43,-49.02,-15.24';
+
+  const query = encodeURIComponent(`${termo}, Goianésia, Goiás`);
+  const url   = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=10&countrycodes=br&viewbox=${BBOX}&bounded=1&accept-language=pt-BR`;
 
   fetch(url, { headers: { 'Accept-Language': 'pt-BR' } })
     .then(r => r.json())
-    .then(data => {
+    .then(raw => {
       status.textContent = '';
 
+      // Filtra apenas resultados que mencionam Goianésia no endereço
+      const data = raw.filter(item =>
+        item.display_name.toLowerCase().includes('goianésia') ||
+        item.display_name.toLowerCase().includes('goianesia')
+      ).slice(0, 5);
+
       if (!data.length) {
-        status.textContent = 'Nenhum resultado encontrado.';
+        status.textContent = 'Nenhuma rua encontrada em Goianésia.';
         return;
       }
 
